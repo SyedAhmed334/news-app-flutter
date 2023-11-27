@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height * 1;
     final width = MediaQuery.sizeOf(context).width * 1;
-
+    final format = DateFormat.yMMMMd('en_US');
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -230,6 +230,105 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: FutureBuilder(
+              future: newsViewModel.getCategoryNews('General'),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(
+                    child: SpinKitCircle(
+                      color: Colors.blue,
+                      size: 50,
+                    ),
+                  );
+                } else if (snapshot.hasData) {
+                  return ListView.builder(
+                    scrollDirection: Axis.vertical,
+                    shrinkWrap: true,
+                    itemCount: snapshot.data!.articles!.length,
+                    itemBuilder: (context, index) {
+                      DateTime dateTime = DateTime.parse(snapshot
+                          .data!.articles![index].publishedAt
+                          .toString());
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: CachedNetworkImage(
+                                imageUrl: snapshot
+                                    .data!.articles![index].urlToImage
+                                    .toString(),
+                                fit: BoxFit.cover,
+                                height: height * 0.18,
+                                width: width * 0.3,
+                                placeholder: (context, url) => Container(
+                                  child: SpinKitCircle(
+                                    color: Colors.blue,
+                                    size: 50,
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Icon(
+                                  Icons.error,
+                                  color: Colors.red,
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: Container(
+                                height: height * 0.18,
+                                padding: EdgeInsets.only(left: 12),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      snapshot.data!.articles![index].title
+                                          .toString(),
+                                      style: GoogleFonts.poppins(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: Colors.black54),
+                                      maxLines: 3,
+                                    ),
+                                    Spacer(),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          snapshot.data!.articles![index]
+                                              .source!.name
+                                              .toString(),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black54),
+                                        ),
+                                        Text(
+                                          format.format(dateTime),
+                                          style: GoogleFonts.poppins(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black54),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                } else {
+                  return Text('No Data Found');
+                }
+              },
             ),
           ),
         ],
